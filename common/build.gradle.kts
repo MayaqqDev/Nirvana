@@ -1,8 +1,6 @@
-val mc_version: String by extra
-val forge_config_port_version: String by extra
-
 plugins {
     id("com.possible-triangle.common")
+    id("conventions")
 }
 
 dependencies {
