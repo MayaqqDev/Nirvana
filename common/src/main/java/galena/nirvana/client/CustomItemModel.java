@@ -30,26 +30,18 @@ public class CustomItemModel {
     public static final CustomItemModel DEERSTALKER = SERVICE.registerCustomModel(NirvanaItems.DEERSTALKER, List.of(HEAD));
 
     private final ModelResourceLocation equippedModel;
-    private final ModelResourceLocation innerModel;
     private final ModelResourceLocation flatModel;
-
-    private final boolean layered;
 
     private final Collection<ItemDisplayContext> contexts;
 
     public CustomItemModel(String name, Collection<ItemDisplayContext> contexts) {
         this.contexts = contexts;
-        this.layered = name.equals("deerstalker");
         var base = NirvanaConstants.createId(name).withPrefix("item/");
         this.equippedModel = new ModelResourceLocation(base.withSuffix("_equipped"), SERVICE.modelVariant());
-        this.innerModel = new ModelResourceLocation(base.withSuffix("_equipped_inner"), SERVICE.modelVariant());
         this.flatModel = new ModelResourceLocation(base.withSuffix("_flat"), SERVICE.modelVariant());
     }
 
     public Collection<? extends ModelResourceLocation> models() {
-        if (layered) {
-            return List.of(flatModel, equippedModel, innerModel);
-        }
         return List.of(flatModel, equippedModel);
     }
 
@@ -75,22 +67,12 @@ public class CustomItemModel {
         model.getTransforms().getTransform(mode).apply(false, pose);
         pose.translate(-0.5, -0.5, -0.5);
 
-        if (customModel && layered) {
-            var inner = renderer.getItemModelShaper().getModelManager().getModel(innerModel);
+        var renderType = customModel ?
+                RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS)
+                : RenderType.cutout();
 
-            var innerVertex = ItemRenderer.getFoilBufferDirect(vertexConsumers, RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS), true, stack.hasFoil());
-            r.render(renderer, inner, innerVertex);
-
-            var outerVertex = ItemRenderer.getFoilBufferDirect(vertexConsumers, RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS), true, stack.hasFoil());
-            r.render(renderer, model, outerVertex);
-        } else {
-            var renderType = customModel ?
-                    RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS)
-                    : RenderType.cutout();
-
-            var vertex = ItemRenderer.getFoilBufferDirect(vertexConsumers, renderType, true, stack.hasFoil());
-            r.render(renderer, model, vertex);
-        }
+        var vertex = ItemRenderer.getFoilBufferDirect(vertexConsumers, renderType, true, stack.hasFoil());
+        r.render(renderer, model, vertex);
 
         pose.popPose();
     }
